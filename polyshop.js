@@ -5,7 +5,7 @@ var constants = {
 	"seckill_url": 'http://polyshop.com.cn/index.php/Home/Ajax/addPrice.html',
 
 	//要秒杀的房间id列表
-	"ids": [2260, 2261, 2262],
+	"ids": [2661],
 
 	//秒杀活动是否开启
 	"isopen": false,
@@ -65,12 +65,11 @@ function listen_check() {
 		if (constants.isopen) {
 			console.warn("监听到秒杀活动已经开启~");
 
-			//seckill(constants.ids);
 			clearInterval(isopenCheck);
 			return;
 		}
 
-		console.log("查看秒杀活动状态~");
+		console.info("查看秒杀活动状态~");
 		check_seckill(constants.current_id, constants.sh2);
 	}, constants.check_interval);
 }
@@ -240,7 +239,6 @@ function start() {
 	constants_display();
 
 	listen_check();
-	seckill();
 
 }
 
