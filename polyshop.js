@@ -5,7 +5,7 @@ var constants = {
 	"seckill_url": 'http://polyshop.com.cn/index.php/Home/Ajax/addPrice.html',
 
 	//要秒杀的房间id列表
-	"ids": [2661],
+	"ids": [2661, 2715, 2714, 2663, 2662],
 
 	//秒杀活动是否开启
 	"isopen": false,
@@ -29,6 +29,12 @@ var constants = {
 	//秒杀抢购间隔
 	"seckill_interval": 200,
 };
+
+
+// 去除系统自身请求
+function isoutherlogin() {
+	console.log("is other login check");
+}
 
 
 // 脚本参数初始化
@@ -65,6 +71,7 @@ function listen_check() {
 		if (constants.isopen) {
 			console.warn("监听到秒杀活动已经开启~");
 
+			seckill();
 			clearInterval(isopenCheck);
 			return;
 		}
@@ -88,7 +95,7 @@ function check_seckill(id, sh2) {
         		console.info("秒杀活动正式开启~");
         		console.warn("秒杀活动正式开启~");
 
-        		seckill();
+        		//seckill();
         		return;
         	} else if (data.s == 1) {
         		console.log("更新竞价价格");
@@ -96,12 +103,12 @@ function check_seckill(id, sh2) {
             } else if (data.s == -1) {
                 console.log('你已经没有选房的机会啦');
 
-            	seckill();
+            	//seckill();
                 return false;
             } else if (data.s == 2) {
                 console.log('竞价已结束');
             	
-            	seckill();
+            	//seckill();
                 return false;
             } else if (data.s == 3) {
                 console.log('竞价未开始');
@@ -163,6 +170,7 @@ function seckill() {
 		}
 
 		clearInterval(seckkill_check);
+		console.info("停止秒杀脚本~");
 
 	}, constants.seckill_interval);
 
@@ -236,10 +244,7 @@ function start() {
 	console.info("启动秒杀脚本~");
 
 	constants_init();
-	constants_display();
-
 	listen_check();
-
 }
 
 // 启动秒杀脚本
@@ -254,6 +259,12 @@ function stop(status) {
 	}
 }
 
+//=============================================================================================
+
+
+constants_init();
+constants_display();
+
 $("#pricelog").on("click", function() {
 	start();
 });
@@ -265,4 +276,6 @@ $(".wrapper .content2 .mainTitle").on("click", function() {
 $("header div.wrapper h1.fl").on("click", function() {
 	seckill();
 });
+
+
 
