@@ -5,7 +5,7 @@ var constants = {
 	"seckill_url": 'http://polyshop.com.cn/index.php/Home/Ajax/addPrice.html',
 
 	//要秒杀的房间id列表
-	"ids": [2661, 2715, 2714, 2663, 2662],
+	"ids": [],
 
 	//秒杀活动是否开启
 	"isopen": false,
@@ -28,12 +28,15 @@ var constants = {
 
 	//秒杀抢购间隔
 	"seckill_interval": 200,
+
+	"isopenCheck": -1,
+	"seckill_check": -1,
 };
 
 
 // 去除系统自身请求
 function isoutherlogin() {
-	console.log("is other login check");
+	//console.log("is other login check");
 }
 
 
@@ -60,14 +63,15 @@ function constants_init() {
 function constants_display() {
 	var version = $().jquery;
 	console.info("jquery version: $s, constants: %o", version, constants);
-	console.info("ids: %o", constants.ids);
+	console.info("ids: %s", JSON.stringify(constants.ids));
+	console.info("current id: %d, current id idx: %d", constants.current_id, constants.current_id_idx);
 }
 
 
 // 监听秒杀活动是否开启
 function listen_check() {
 	console.info("监听秒杀活动是否开启~");
-	var isopenCheck = setInterval(function() {
+	isopenCheck = setInterval(function() {
 		if (constants.isopen) {
 			console.warn("监听到秒杀活动已经开启~");
 
@@ -138,11 +142,13 @@ function seckill() {
 	constants.current_id_idx = 0;
 	constants.current_id = constants.ids[constants.current_id_idx];
 
-	var seckkill_check = setInterval(function() {
+	seckill_check = setInterval(function() {
 		if (constants.current_id_idx >= constants.ids.length) {
 			console.info("所有id秒杀失败！");
 			console.info("秒杀脚本停止~~");
-			clearInterval(seckkill_check);
+
+			clearInterval(seckill_check);
+			constants_display();
 			return;
 		}
 
@@ -151,7 +157,9 @@ function seckill() {
 		if (constants.ok == 1) {
 			console.info("成功秒杀id: %d", id);
 			console.info("秒杀脚本停止~~");
-			clearInterval(seckkill_check);
+
+			clearInterval(seckill_check);
+			constants_display();
 			return;
 		}
 
@@ -169,8 +177,9 @@ function seckill() {
 			return;
 		}
 
-		clearInterval(seckkill_check);
 		console.info("停止秒杀脚本~");
+		clearInterval(seckill_check);
+		constants_display();
 
 	}, constants.seckill_interval);
 
@@ -253,10 +262,21 @@ function stop(status) {
 	if (!status) {
 		constants.ok = -2;
 		console.info("停止秒杀脚本~");
+		reset();
 	} else {
 		constants.ok = status;
 		console.info("停止本次秒杀, id: %d", constants.current_id);
 	}
+
+	constants_display();
+}
+
+// 启动秒杀脚本
+function reset() {
+	console.info("重置秒杀脚本~");
+	clearInterval(constants.isopenCheck);
+	clearInterval(constants.seckill_check)
+	constants_init();
 }
 
 //=============================================================================================
@@ -266,14 +286,17 @@ constants_init();
 constants_display();
 
 $("#pricelog").on("click", function() {
-	start();
+	console.info("sec kill~");
+	seckill();
 });
 
 $(".wrapper .content2 .mainTitle").on("click", function() {
+	console.info("sec kill~");
 	seckill();
 });
 
 $("header div.wrapper h1.fl").on("click", function() {
+	console.info("sec kill~");
 	seckill();
 });
 
