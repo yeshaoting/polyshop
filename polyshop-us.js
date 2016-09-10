@@ -253,7 +253,8 @@ function start() {
 	console.info("启动秒杀脚本~");
 
 	constants_init();
-	listen_check();
+	//listen_check();
+	seckill();
 }
 
 // 启动秒杀脚本
