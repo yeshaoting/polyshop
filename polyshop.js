@@ -20,11 +20,14 @@ var constants = {
 	//当前秒杀的房间id
 	"current_id": 0,
 
+	//当前秒杀的房间id下标
+	"current_id_idx": 0,
+
 	//查看秒杀活动是否开启间隔
 	"check_interval": 200,
 
 	//秒杀抢购间隔
-	"seckill_interval": 250,
+	"seckill_interval": 200,
 };
 
 
@@ -43,6 +46,7 @@ function constants_init() {
 	}
 
 	constants.current_id = constants.ids[0];
+	constants.current_id_idx = 0;
 }
 
 
@@ -121,87 +125,103 @@ function check_seckill(id, sh2) {
 
 // 排队秒杀
 function seckill() {
+	console.info("准备排队秒杀ids: %o", constants.ids);
 	constants.isopen = true;
-	for (var idx = 0; idx < constants.ids.length; idx++) {
-		constants.ok = 0;
+	constants.ok = 0;
 
-		var id = constants.ids[idx];
+	constants.current_id_idx = 0;
+	constants.current_id = constants.ids[constants.current_id_idx];
+
+	var seckkill_check = setInterval(function() {
+		if (constants.current_id_idx >= constants.ids.length) {
+			console.info("所有id秒杀失败！");
+			console.info("秒杀脚本停止~~");
+			clearInterval(seckkill_check);
+			return;
+		}
+
+		var id = constants.ids[constants.current_id_idx];
 		constants.current_id = id;
-		doseckill(id, constants.sh2);
-
 		if (constants.ok == 1) {
 			console.info("成功秒杀id: %d", id);
-			break;
-		} else if (constants.ok == -1) {
-			console.info("秒杀失败id: %d", id);
+			console.info("秒杀脚本停止~~");
+			clearInterval(seckkill_check);
+			return;
 		}
-	}
 
-	console.info("秒杀脚本停止~~");
+		if (constants.ok == 0) {
+			doseckill(id, constants.sh2);
+			return;
+		}
+
+		if (constants.ok == -1) {
+			console.info("秒杀失败id: %d", id);
+			console.info("开始下一个id秒杀！");
+			constants.current_id_idx++;
+			constants.current_id = constants.ids[constants.current_id_idx];
+			constants.ok = 0;
+			return;
+		}
+
+		clearInterval(seckkill_check);
+
+	}, constants.seckill_interval);
+
 }
 
 
 // 单个秒杀
 function doseckill(id, sh2) {
-	console.log("准备秒杀id: %d, sh2: %d", id, sh2);
-	if (!constants.isopen) {
-		console.info("秒杀活动尚未开始~");
-		return;
-	}
-
 	console.info("正在秒杀id: %d", id);
 
-	var seckkill_interval = setInterval(function() {
-		$.ajax({
-		    url: constants.seckill_url,
-		    data: {id: id,sh:sh2},
-		    type: 'post',
-		    async: false,
-		    dataType: 'json',
-		    success: function (data) {
-		        if(data.isok==1){
-		        	console.info("竞拍成功id: %d", id);
-		        	console.warn("竞拍成功id: %d", id);
-		            $('#alert4').show();
-		            constants.ok = 1;
-		            return;
-		        }
+	$.ajax({
+	    url: constants.seckill_url,
+	    data: {id: id,sh:sh2},
+	    type: 'post',
+	    async: true,
+	    dataType: 'json',
+	    success: function (data) {
+	        if(data.isok==1){
+	        	console.info("竞拍成功id: %d", id);
+	        	console.warn("竞拍成功id: %d", id);
+	            $('#alert4').show();
+	            constants.ok = 1;
+	            return;
+	        }
 
-		        if (data.s == 1) {
-		            console.info("更新竞价价格");
-		        } else if (data.s == -1) {
-		            console.info('你已经没有选房的机会啦');
-		            changeStatus(id);
-		        } else if (data.s == 2) {
-		            console.info('竞价已结束');
-		            changeStatus(id);
-		        } else if (data.s == 3) {
-		            console.info('竞价未开始');
-		        } else if (data.s == 10) {
-		            console.info('已超过最大额度');
-		            changeStatus(id);
-		        } else if (data.s == 20) {
-		            console.info('您已是目前最高价！');
-		            changeStatus(id);
-		        } else if (data.s == -99) {
-		            console.info(data.msg);
-					changeStatus(id);
-		        }
+	        if (data.s == 1) {
+	            console.log("更新竞价价格");
+	        } else if (data.s == -1) {
+	            console.info('你已经没有选房的机会啦');
+	            changeStatus(id);
+	        } else if (data.s == 2) {
+	            console.info('竞价已结束');
+	            changeStatus(id);
+	        } else if (data.s == 3) {
+	            console.log('竞价未开始');
+	        } else if (data.s == 10) {
+	            console.info('已超过最大额度');
+	            changeStatus(id);
+	        } else if (data.s == 20) {
+	            console.info('您已是目前最高价！');
+	            changeStatus(id);
+	        } else if (data.s == -99) {
+	            console.info(data.msg);
+				changeStatus(id);
+	        }
 
-		    }
-
-		});
-
-		//sleep(interval);
-	}, constants.seckill_interval);
+	    }
+	});
 
 }
 
-// 更改秒杀状态
+// 更新秒杀状态
 function changeStatus(id) {
 	if (id == constants.current_id) {
 		constants.ok = -1;
+		console.log("更新秒杀状态id: %s", id);
 	}
+
 }
 
 // bad implementation
@@ -225,9 +245,15 @@ function start() {
 }
 
 // 启动秒杀脚本
-function stop() {
-	console.info("停止秒杀脚本~");
-	constants.ok = -1;
+function stop(status) {
+	console.info("停止秒杀~");
+	if (!status) {
+		constants.ok = -2;
+		console.info("停止秒杀脚本~");
+	} else {
+		constants.ok = status;
+		console.info("停止本次秒杀, id: %d", constants.current_id);
+	}
 }
 
 $("#pricelog").on("click", function() {
