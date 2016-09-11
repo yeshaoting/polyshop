@@ -5,7 +5,7 @@ var constants = {
 	"seckill_url": 'http://polyshop.com.cn/index.php/Home/Ajax/addPrice.html',
 
 	//要秒杀的房间id列表
-	"ids": [],
+	"ids": [1, 2, 3, 4],
 
 	//秒杀活动是否开启
 	"isopen": false,
@@ -27,10 +27,13 @@ var constants = {
 	"check_interval": 200,
 
 	//秒杀抢购间隔
-	"seckill_interval": 200,
+	"seckill_interval": 10,
 
 	"isopenCheck": -1,
 	"seckill_check": -1,
+
+	//顺序秒杀房间id编号
+	"start_index_idx": 0,
 };
 
 
@@ -54,6 +57,18 @@ function constants_init() {
 		throw "请填写正确的秒杀房间id列表";
 	}
 
+	if (constants.start_index_idx >= constants.ids.length) {
+		console.info("请填写正确的开始秒杀id索引");
+		throw "请填写正确的开始秒杀id索引";
+	}
+
+	var new_ids = [];
+	for (var i = 0; i < constants.ids.length; i++) {
+		var id = constants.ids[(constants.start_index_idx + i) %constants.ids.length]
+		new_ids.push(id);
+	}
+
+	constants.ids = new_ids;
 	constants.current_id = constants.ids[0];
 	constants.current_id_idx = 0;
 }
@@ -157,6 +172,7 @@ function seckill() {
 		if (constants.ok == 1) {
 			console.info("成功秒杀id: %d", id);
 			console.info("秒杀脚本停止~~");
+			notifyMe("秒杀通知", "成功秒杀id: " + id);
 
 			clearInterval(seckill_check);
 			constants_display();
@@ -194,7 +210,7 @@ function doseckill(id, sh2) {
 	    url: constants.seckill_url,
 	    data: {id: id,sh:sh2},
 	    type: 'post',
-	    async: true,
+	    async: false,
 	    dataType: 'json',
 	    success: function (data) {
 	        if(data.isok==1){
@@ -302,4 +318,26 @@ $("header div.wrapper h1.fl").on("click", function() {
 });
 
 
+// request permission on page load
+document.addEventListener('DOMContentLoaded', function() {
+	if (!Notification) {
+		alert('Desktop notifications not available in your browser. Try Chromium.');
+		return;
+	}
 
+	if (Notification.permission !== "granted")
+		Notification.requestPermission();
+});
+
+function notifyMe(title, body) {
+	if (Notification.permission !== "granted") {
+		Notification.requestPermission();
+	} else {
+		var notification = new Notification(title, {
+			icon: 'http://yeshaoting.cn/favicon.ico',
+			body: body,
+		});
+
+	}
+
+}

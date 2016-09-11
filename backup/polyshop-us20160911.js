@@ -5,7 +5,7 @@ var constants = {
 	"seckill_url": 'http://polyshop.com.cn/index.php/Home/Ajax/addPrice.html',
 
 	//要秒杀的房间id列表
-	"ids": [2661, 2715, 2714, 2663, 2662],
+	"ids": [2661,2715,2714,2663,2662,2657,2658,2659,2713,2717],
 
 	//秒杀活动是否开启
 	"isopen": false,
@@ -157,6 +157,7 @@ function seckill() {
 		if (constants.ok == 1) {
 			console.info("成功秒杀id: %d", id);
 			console.info("秒杀脚本停止~~");
+			notifyMe("秒杀通知", "成功秒杀id: " + id);
 
 			clearInterval(seckill_check);
 			constants_display();
@@ -302,4 +303,26 @@ $("header div.wrapper h1.fl").on("click", function() {
 });
 
 
+// request permission on page load
+document.addEventListener('DOMContentLoaded', function() {
+	if (!Notification) {
+		alert('Desktop notifications not available in your browser. Try Chromium.');
+		return;
+	}
 
+	if (Notification.permission !== "granted")
+		Notification.requestPermission();
+});
+
+function notifyMe(title, body) {
+	if (Notification.permission !== "granted") {
+		Notification.requestPermission();
+	} else {
+		var notification = new Notification(title, {
+			icon: 'http://yeshaoting.cn/favicon.ico',
+			body: body,
+		});
+
+	}
+
+}
