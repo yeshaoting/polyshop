@@ -27,13 +27,10 @@ var constants = {
 	"check_interval": 200,
 
 	//秒杀抢购间隔
-	"seckill_interval": 10,
+	"seckill_interval": 200,
 
 	"isopenCheck": -1,
 	"seckill_check": -1,
-
-	//顺序秒杀房间id编号
-	"start_index_idx": 0,
 };
 
 
@@ -57,18 +54,6 @@ function constants_init() {
 		throw "请填写正确的秒杀房间id列表";
 	}
 
-	if (constants.start_index_idx >= constants.ids.length) {
-		console.info("请填写正确的开始秒杀id索引");
-		throw "请填写正确的开始秒杀id索引";
-	}
-
-	var new_ids = [];
-	for (var i = 0; i < constants.ids.length; i++) {
-		var id = constants.ids[(constants.start_index_idx + i) %constants.ids.length]
-		new_ids.push(id);
-	}
-
-	constants.ids = new_ids;
 	constants.current_id = constants.ids[0];
 	constants.current_id_idx = 0;
 }
@@ -276,7 +261,7 @@ function start() {
 // 启动秒杀脚本
 function stop(status) {
 	console.info("停止秒杀~");
-	if (!status) {
+	if (!status || status > 1 || status < - 1) {
 		constants.ok = -2;
 		console.info("停止秒杀脚本~");
 		reset();
