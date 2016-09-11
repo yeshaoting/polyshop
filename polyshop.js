@@ -5,7 +5,7 @@ var constants = {
 	"seckill_url": 'http://polyshop.com.cn/index.php/Home/Ajax/addPrice.html',
 
 	//要秒杀的房间id列表
-	"ids": [1, 2, 3, 4],
+	"ids": [2736, 2732, 2744, 2784, 2735, 2734],
 
 	//秒杀活动是否开启
 	"isopen": false,
