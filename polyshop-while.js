@@ -142,14 +142,14 @@ function seckill() {
 	constants.current_id_idx = 0;
 	constants.current_id = constants.ids[constants.current_id_idx];
 
-	seckill_check = setInterval(function() {
+	while (true) {
 		if (constants.current_id_idx >= constants.ids.length) {
 			console.info("所有id秒杀失败！");
 			console.info("秒杀脚本停止~~");
 
 			clearInterval(seckill_check);
 			constants_display();
-			return;
+			break;
 		}
 
 		var id = constants.ids[constants.current_id_idx];
@@ -161,12 +161,12 @@ function seckill() {
 
 			clearInterval(seckill_check);
 			constants_display();
-			return;
+			break;
 		}
 
 		if (constants.ok == 0) {
 			doseckill(id, constants.sh2);
-			return;
+			continue;
 		}
 
 		if (constants.ok == -1) {
@@ -175,14 +175,14 @@ function seckill() {
 			constants.current_id_idx++;
 			constants.current_id = constants.ids[constants.current_id_idx];
 			constants.ok = 0;
-			return;
+			continue;
 		}
 
 		console.info("停止秒杀脚本~");
 		clearInterval(seckill_check);
 		constants_display();
 
-	}, constants.seckill_interval);
+	}
 
 }
 

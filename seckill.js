@@ -22,7 +22,7 @@
 
     console.info("tampermonkey polyshop");
     loadJs('http://cdn.bootcss.com/jquery/2.0.0/jquery.min.js');
-    loadJs('http://ocszqgifn.bkt.clouddn.com/meituan/polyshop-us.js?version=100006');
+    loadJs('http://ocszqgifn.bkt.clouddn.com/meituan/polyshop.js?version=100012');
         
 })();
 
